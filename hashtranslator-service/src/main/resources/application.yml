@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: hash-translator
+  data:
+    mongodb:
+      username: ${MONGODB_USERNAME:root}
+      password: ${MONGODB_PASS:example}
+      database: hashes
+      port: ${MONGODB_PORT:27017}
+      host: ${MONGODB_HOST:localhost}
+  security:
+    oauth2:
+      resource:
+        token-info-uri: "http://localhost:8080/api/auth/authenticated"
+
+md5:
+  application:
+    url: "https://md5.opiums.eu/api.php?type=md5&hash="
+
+retry:
+  maxAttempts: 3
+  maxDelay: 1000
+
+server:
+  port: 8082
+
+introspection:
+  url: http://${INTROSPECTION_HOST:localhost}:8080/api/auth/authenticated

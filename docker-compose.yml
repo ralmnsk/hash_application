@@ -1,0 +1,82 @@
+version: "2"
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - '27017:27017'
+      - '28017:28017'
+    networks:
+      - cloud-network
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - '8081:8081'
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    networks:
+      - cloud-network
+
+  postgresql:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=example
+    ports:
+      - '5432:5432'
+    networks:
+      - cloud-network
+
+  hashtranslator:
+    container_name: hashtranslator
+    build:
+      context: ./hashtranslator-service
+      dockerfile: Dockerfile
+    image: hashtranslator
+    depends_on:
+      - postgresql
+      - mongo
+    restart: always
+    ports:
+      - '8082:8082'
+    networks:
+      - cloud-network
+    environment:
+      MONGODB_USERNAME: root
+      MONGODB_PASS: example
+      MONGODB_PORT: 27017
+      MONGODB_HOST: mongo
+      INTROSPECTION_HOST: authorization
+
+  authorization:
+    container_name: authorization
+    build:
+      context: ./authorization-service
+      dockerfile: Dockerfile
+    image: authorization
+    depends_on:
+      - postgresql
+    restart: always
+    ports:
+      - '8080:8080'
+    networks:
+      - cloud-network
+    environment:
+      SQL_HOST: postgresql
+      SQL_USERNAME: postgres
+      SQL_PASS: example
+      APP_ADMIN: iland@mail.ru
+      APP_ADMIN_PASS: 123
+
+networks:
+  cloud-network:
+    driver: bridge
